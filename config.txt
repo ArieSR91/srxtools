@@ -8,6 +8,7 @@ apk.src=src.apk
 apk.out=out.apk
 
 # 签名配置
+# leave it false, cause using new sign metode
 sign.enable=false
 sign.file=test.keystore
 sign.password=123456

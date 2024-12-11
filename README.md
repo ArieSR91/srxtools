@@ -6,3 +6,4 @@ install this required packages:
 ```
 sudo apt install default-jdk apksigner srtool
 ```
+

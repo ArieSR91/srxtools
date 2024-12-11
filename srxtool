@@ -1,0 +1,59 @@
+#!/bin/bash
+
+source ./sign.conf
+
+function killer()
+{
+	apkname="$2"
+	output=$(echo $apkname | cut -d '.' -f1)
+	echo -e "[*] Apk Signature Killer by Arie-SR91"
+	echo -e "[!] This script is intended for educational purposes only"
+	echo -e "\n[+] editing config.txt ..."
+	srtool change apk.signed=src.apk apk.signed=$apkname config.txt
+	srtool change apk.src=src.apk apk.src=$apkname config.txt
+	srtool change apk.out=out.apk apk.out=${output}_kill.apk config.txt
+
+	echo -e "\n[*] killing apk signature ..."
+	java -jar --add-exports=java.base/java.io=ALL-UNNAMED --add-exports=java.base/java.util=ALL-UNNAMED --add-exports=java.base/java.math=ALL-UNNAMED --add-exports=java.base/java.security.cert=ALL-UNNAMED --add-exports=java.base/java.security=ALL-UNNAMED --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED --add-exports=java.base/sun.security.util=ALL-UNNAMED --add-exports=java.base/sun.security.x509=ALL-UNNAMED srxtool.jar
+
+	echo -e "[+] reset config.txt ..."
+	sed -i "s|apk.signed=$apkname|apk.signed=src.apk|" config.txt
+	sed -i "s|apk.src=$apkname|apk.src=src.apk|" config.txt
+	sed -i "s|apk.out=${output}_kill.apk|apk.out=out.apk|" config.txt
+	if [ "$signafterkill" == "true" ]; then
+		killapk=$(echo "${output}_kill.apk" | cut -d '.' -f1)
+		cp ${output}_kill.apk ${killapk}_sign.apk
+		apkname=${killapk}_sign.apk
+		signer
+	else
+		echo -e "[*] done ..."
+	fi
+}
+
+function signer()
+{
+	echo -e "[+] signing apk ..."
+	apksigner sign --ks $signkey --ks-pass pass:$signpwd $apkname
+	echo -e "[+] verifying apk ..."
+	apksigner verify $apkname
+    rm ${apkname}.idsig
+	echo -e "[*] done ..."
+}
+# if you need srtool package, you must add my repo to your linux
+# visit https://github.com/ArieSR91/user91-repo
+
+case $1 in
+	kill)
+		killer $@
+		;;
+	sign)
+		apkname="$2"
+		output=$(echo $apkname | cut -d '.' -f1)
+		cp $apkname ${output}_sign.apk
+		apkname=${output}_sign.apk
+		signer $@
+		;;
+	-h|--help|*)
+		echo -e "Usage: srxtool kill|sign [path to apk]"
+		;;
+esac

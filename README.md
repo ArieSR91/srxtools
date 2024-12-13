@@ -6,4 +6,4 @@ install this required packages:
 ```
 sudo apt install default-jdk apksigner srtool
 ```
-
+Usage: srxtool kill|sign [path to apk]
